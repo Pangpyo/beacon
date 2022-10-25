@@ -8,7 +8,7 @@ def bringv(beaconinput):
     beacon_value = []
     for rssi in beaconinput:
         rssi = rssi.rstrip()
-        a, b = map(float, rssi.split("\t"))
+        a, b = map(float, rssi.split(","))
         beacon_value.append((b))
     return beacon_value
 
@@ -33,20 +33,20 @@ def SimpleKalman2(z):
     return x, P, K
 
 
-left_input = list(open("beacon_left.txt"))
-right_input = list(open("beacon_right.txt"))
-front_input = list(open("beacon_front.txt"))
+left_input = list(open("./data2/left.txt"))
+right_input = list(open("./data2/right.txt"))
+front_input = list(open("./data2/front.txt"))
 beacon_left = bringv(left_input)
 beacon_right = bringv(right_input)
 beacon_front = bringv(front_input)
 
 z_left = []
-x = beacon_left[0]
+x = -75.7
 P = np.array([[6]])
 A = np.array([[1]])
 H = np.array([[1]])
-Q = np.array([[0]])
-R = np.array([[4]])
+Q = np.array([[0.005]])
+R = np.array([[20]])
 
 for i in range(1, len(beacon_left)):
     z = beacon_left[i]
@@ -56,12 +56,12 @@ for i in range(1, len(beacon_left)):
 
 
 z_right = []
-x = beacon_right[0]
+x = -78.5
 P = np.array([[6]])
 A = np.array([[1]])
 H = np.array([[1]])
-Q = np.array([[0]])
-R = np.array([[4]])
+Q = np.array([[0.005]])
+R = np.array([[20]])
 for i in range(1, len(beacon_right)):
     z = beacon_right[i]
 
@@ -69,12 +69,12 @@ for i in range(1, len(beacon_right)):
     z_right.append(volt[0][0])
 
 z_front = []
-x = beacon_front[0]
+x = -78.3
 P = np.array([[6]])
 A = np.array([[1]])
 H = np.array([[1]])
-Q = np.array([[0]])
-R = np.array([[4]])
+Q = np.array([[0.005]])
+R = np.array([[20]])
 
 for i in range(1, len(beacon_front)):
     z = beacon_front[i]
@@ -85,8 +85,7 @@ for i in range(1, len(beacon_front)):
 # makeplot(z_right, "Kalman right")
 # makeplot(z_left, "Kalman left")
 
-# plt.xlim(0, len(z_left))
-# plt.ylim(-90, -60)
+
 # plt.grid()
 # plt.legend(loc=1)
 # plt.show()
@@ -133,7 +132,7 @@ class Trilateration:
 
 
 def distance(rssi):
-    d = 10 ** ((-68 - rssi) / (10 * 2))
+    d = 10 ** ((-74.3 - rssi) / (10 * 2))
     return d
 
 
@@ -157,9 +156,9 @@ for i in z_front:
 # plt.legend(loc=1)
 # plt.show()
 
-plt.plot(-2, -4, "o", label="ap1")
-plt.plot(1.5, -4, "o", label="ap2")
-plt.plot(-0.25, 3, "o", label="ap3")
+# plt.plot(-2, -4, "o", label="ap1")
+# plt.plot(1.5, -4, "o", label="ap2")
+# plt.plot(-0.25, 3, "o", label="ap3")
 
 
 if __name__ == "__main__":
@@ -167,18 +166,18 @@ if __name__ == "__main__":
 
     def show_plot():
         global userx, usery
-        plt.plot(-2, -4, "o", label="ap1")
-        plt.plot(1.5, -4, "o", label="ap2")
-        plt.plot(-0.25, 3, "o", label="ap3")
+        plt.plot(-1, 0, "o", label="ap1")
+        plt.plot(1, 0, "o", label="ap2")
+        plt.plot(0, 1.5, "o", label="ap3")
         plt.plot(userx, usery, "o", label="user")
         plt.legend()
         plt.xlabel("x축")
         plt.ylabel("y축")
 
-    for i in range(20, len(z_front), 3):
-        ap1 = AP(-2, 0, dis_left[i])
-        ap2 = AP(2, 0, dis_right[i])
-        ap3 = AP(0, 3, dis_front[i])
+    for i in range(10, len(z_front)):
+        ap1 = AP(-1, 0, dis_left[i])
+        ap2 = AP(1, 0, dis_right[i])
+        ap3 = AP(0, 1.5, dis_front[i])
         tril = Trilateration(ap1, ap2, ap3)
         userx, usery = tril.calcUserLocation()
         drawnow(show_plot)
